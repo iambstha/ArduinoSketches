@@ -69,7 +69,7 @@ void setup() {
   pinMode(echoPin, INPUT);
   tempsensor.begin();
 
-  WiFi.config(customIP, gateway, subnet);
+  // WiFi.config(customIP, gateway, subnet);
 
   // Connect to WiFi
   WiFi.mode(WIFI_STA);
@@ -84,7 +84,7 @@ void setup() {
   Serial.println(WiFi.localIP());
 
   // Configure WiFi access point mode
-  WiFi.softAPConfig(customSoftIP, gateway, subnet);
+  // WiFi.softAPConfig(customSoftIP, gateway, subnet);
 
   // Set timezone and initialize time object
   initTime("NST-5:45");
