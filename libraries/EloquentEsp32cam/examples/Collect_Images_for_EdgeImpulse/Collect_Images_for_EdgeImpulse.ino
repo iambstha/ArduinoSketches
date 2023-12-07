@@ -21,8 +21,9 @@
 #include <eloquent_esp32cam/extra/esp32/wifi/sta.h>
 #include <eloquent_esp32cam/viz/image_collection.h>
 
-using namespace eloq;
-using namespace eloq::viz;
+using eloq::camera;
+using eloq::wifi;
+using eloq::viz::collectionServer;
 
 
 void setup() {
@@ -32,7 +33,7 @@ void setup() {
 
     // camera settings
     // replace with your own model!
-    camera.pinout.aithinker();
+    camera.pinout.wroom_s3();
     camera.brownout.disable();
     // Edge Impulse models work on square images
     // face resolution is 240x240

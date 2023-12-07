@@ -1,0 +1,168 @@
+#include <SPI.h>
+#include <LoRa.h>
+#include <OneWire.h>
+#include <DallasTemperature.h>
+#include "MQ135.h"
+#include <Wire.h>
+#include <Adafruit_GFX.h>
+#include <Adafruit_SSD1306.h>
+#include <WiFi.h>
+#include <ESPAsyncWebServer.h>
+#include <WebSocketsServer.h>
+#include <ArduinoJson.h>
+
+
+const int oneWireBus = 4;
+OneWire oneWire(oneWireBus);
+DallasTemperature tempsensor(&oneWire);
+
+WebSocketsServer webSocket = WebSocketsServer(81);
+
+const char* ssid = "Smart Solutions";
+const char* password = "913niraj913913";
+
+
+#define ss 5
+#define rst 14
+#define dio0 2
+#define SCREEN_WIDTH 128
+#define SCREEN_HEIGHT 32
+#define OLED_RESET -1
+#define SCREEN_ADDRESS 0x3C
+Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
+const int trigPin = 33;
+const int echoPin = 32;
+const int gasPin = 35;
+struct tm timeinfo;
+const char* ntpServer = "pool.ntp.org";
+const long gmtOffset_sec = 3600;
+const int daylightOffset_sec = 3600;
+MQ135 gasSensor = MQ135(gasPin);
+#define SOUND_SPEED 0.034
+#define CM_TO_INCH 0.393701
+float ppm;
+long duration;
+float distanceCm;
+float gasValue;
+String formattedTime;
+
+String enteredUsername = "";
+String enteredPassword = "";
+
+const int numReadings = 5;
+float distanceArray[numReadings];
+float temperatureArray[numReadings];
+float rzeroArray[numReadings];
+float ppmArray[numReadings];
+
+void setup() {
+  Serial.begin(115200);
+
+  pinMode(trigPin, OUTPUT);
+  pinMode(echoPin, INPUT);
+  tempsensor.begin();
+
+  WiFi.begin(ssid, password);
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(1000);
+    Serial.println("Connecting to WiFi...");
+  }
+  Serial.println("Connected to WiFi");
+
+  webSocket.begin();
+  webSocket.onEvent(webSocketEvent);
+}
+
+void loop() {
+  // Assuming you have sensor data (distanceCm, temperatureC, ppm) calculated here
+  formattedTime = getFormattedTime();
+  tempsensor.requestTemperatures();
+  float temperatureC = tempsensor.getTempCByIndex(0);
+  float rzero = gasSensor.getRZero();
+  float ppm = gasSensor.getPPM();
+  digitalWrite(trigPin, LOW);
+  delayMicroseconds(10);
+  digitalWrite(trigPin, HIGH);
+  delayMicroseconds(10);
+  digitalWrite(trigPin, LOW);
+  duration = pulseIn(echoPin, HIGH);
+  distanceCm = duration * SOUND_SPEED / 2;
+  gasValue = ppm;
+
+  sendSensorData("HC-SR04", distanceCm);
+  sendSensorData("DS18B20", temperatureC);
+  sendSensorData("MQ-135", ppm);
+
+  webSocket.loop();
+}
+
+void sendSensorData(const char* sensorType, float sensorValue) {
+  DynamicJsonDocument jsonDocument(200);
+  jsonDocument["sensorType"] = sensorType;
+  jsonDocument["sensorValue"] = sensorValue;
+
+  String jsonString;
+  serializeJson(jsonDocument, jsonString);
+
+  webSocket.broadcastTXT(jsonString);
+}
+
+void webSocketEvent(WStype_t type, uint8_t* payload, size_t length) {
+  USE_SERIAL.printf("[WSc] Received WebSocket message of type %d\n", type);
+  USE_SERIAL.printf("[WSc] WebSocket payload %d\n", payload);
+  USE_SERIAL.printf("[WSc] WebSocket message length %d\n", length);
+  switch (type) {
+    case WStype_DISCONNECTED:
+      USE_SERIAL.printf("[WSc] Disconnected!\n");
+      break;
+      
+    case WStype_CONNECTED: {
+      // Extract the connected URL from payload
+      String connectedUrl = String((char*)payload).substring(0, length);
+      USE_SERIAL.printf("[WSc] Connected to url: %s\n", connectedUrl.c_str());
+
+      // send message to server when Connected
+      webSocket.sendTXT("Connected");
+      break;
+    }
+
+  case WStype_TEXT: {
+      USE_SERIAL.printf("[WSc] get text: %s\n", payload);
+
+      // Convert payload to String
+      String payloadString = String((char*)payload);
+
+      // Display the JSON data before parsing
+      USE_SERIAL.println("Received JSON data:");
+      USE_SERIAL.println(payloadString);
+
+      // Parse the received JSON data
+      StaticJsonDocument<200> jsonDocument;
+      DeserializationError error = deserializeJson(jsonDocument, payloadString);
+
+      // Check if parsing was successful
+      if (error) {
+          USE_SERIAL.printf("[WSc] Error parsing JSON: %s\n", error.c_str());
+      } else {
+          // Access JSON data
+          const char* message = jsonDocument["message"];
+          int value = jsonDocument["value"].as<int>();  // Corrected to read as int
+          USE_SERIAL.printf("[WSc] Parsed JSON - Message: %s, Value: %d\n", message, value);
+      }
+      break;
+  }
+
+
+    case WStype_BIN:
+      USE_SERIAL.printf("[WSc] get binary length: %u\n", length);
+      hexdump(payload, length);
+      break;
+
+    case WStype_ERROR:
+    case WStype_FRAGMENT_TEXT_START:
+    case WStype_FRAGMENT_BIN_START:
+    case WStype_FRAGMENT:
+    case WStype_FRAGMENT_FIN:
+      break;
+  }
+}
