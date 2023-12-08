@@ -94,8 +94,8 @@ void loop() {
 
 void sendSensorData(const char* sensorType, float sensorValue) {
   DynamicJsonDocument jsonDocument(200);
-  jsonDocument["sensorType"] = sensorType;
-  jsonDocument["sensorValue"] = sensorValue;
+  jsonDocument["sensor_id"] = sensorType;
+  jsonDocument["sensor_data"] = sensorValue;
 
   String jsonString;
   serializeJson(jsonDocument, jsonString);
