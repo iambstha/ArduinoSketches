@@ -51,7 +51,7 @@ void connectToWiFi() {
 
 void setupWebSocket() {
   USE_SERIAL.println("[SETUP] Starting WebSocket connection setup...");
-  webSocket.begin("192.168.1.47", 8080, "/bishal");
+  webSocket.begin("192.168.1.72", 8080, "/bishal");
   webSocket.onEvent(webSocketEvent);
   webSocket.setReconnectInterval(5000);
 }
@@ -74,15 +74,16 @@ void loop() {
   tempsensor.requestTemperatures();
   float temperatureC = tempsensor.getTempCByIndex(0);
   ppm = gasSensor.getPPM();
-
   digitalWrite(trigPin, LOW);
   delayMicroseconds(10);
   digitalWrite(trigPin, HIGH);
   delayMicroseconds(10);
   digitalWrite(trigPin, LOW);
   duration = pulseIn(echoPin, HIGH);
+  delayMicroseconds(100);
   distanceCm = duration * SOUND_SPEED / 2;
   gasValue = ppm;
+  delay(500);
 
   sendSensorData("HC-SR04", distanceCm);
   sendSensorData("DS18B20", temperatureC);
