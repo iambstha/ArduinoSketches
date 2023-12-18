@@ -36,9 +36,17 @@ float gasValue;
 #define USE_SERIAL Serial
 
 void hexdump(const void* mem, uint32_t len, uint8_t cols = 16) {
-  // Your hexdump function remains unchanged
+  const uint8_t* src = (const uint8_t*)mem;
+  USE_SERIAL.printf("\n[HEXDUMP] Address: 0x%08X len: 0x%X (%d)", (ptrdiff_t)src, len, len);
+  for (uint32_t i = 0; i < len; i++) {
+    if (i % cols == 0) {
+      USE_SERIAL.printf("\n[0x%08X] 0x%08X: ", (ptrdiff_t)src, i);
+    }
+    USE_SERIAL.printf("%02X ", *src);
+    src++;
+  }
+  USE_SERIAL.printf("\n");
 }
-
 void connectToWiFi() {
   USE_SERIAL.println("Connecting to WiFi...");
   WiFiMulti.addAP("Smart Solutions", "913niraj913913");
@@ -106,8 +114,8 @@ void sendSensorData(const char* sensorType, float sensorValue) {
 
 void webSocketEvent(WStype_t type, uint8_t* payload, size_t length) {
   USE_SERIAL.printf("[WSc] Received WebSocket message of type %d\n", type);
-  USE_SERIAL.printf("[WSc] WebSocket payload %s\n", payload);
-  USE_SERIAL.printf("[WSc] WebSocket message length %d\n", length);
+  USE_SERIAL.printf("[WSc] WebSocket payload: %s\n", payload);
+  USE_SERIAL.printf("[WSc] WebSocket payload length %d\n", length);
   switch (type) {
     case WStype_DISCONNECTED:
       USE_SERIAL.printf("[WSc] Disconnected!\n");
@@ -115,11 +123,8 @@ void webSocketEvent(WStype_t type, uint8_t* payload, size_t length) {
 
     case WStype_CONNECTED:
       {
-        // Extract the connected URL from payload
         String connectedUrl = String((char*)payload).substring(0, length);
         USE_SERIAL.printf("[WSc] Connected to url: %s\n", connectedUrl.c_str());
-
-        // send message to server when Connected
         webSocket.sendTXT("Connected");
         break;
       }
@@ -127,30 +132,22 @@ void webSocketEvent(WStype_t type, uint8_t* payload, size_t length) {
     case WStype_TEXT:
       {
         USE_SERIAL.printf("[WSc] get text: %s\n", payload);
-
-        // Convert payload to String
         String payloadString = String((char*)payload);
-
-        // Display the JSON data before parsing
         USE_SERIAL.println("Received JSON data:");
         USE_SERIAL.println(payloadString);
 
-        // Parse the received JSON data
         StaticJsonDocument<200> jsonDocument;
         DeserializationError error = deserializeJson(jsonDocument, payloadString);
 
-        // Check if parsing was successful
         if (error) {
           USE_SERIAL.printf("[WSc] Error parsing JSON: %s\n", error.c_str());
         } else {
-          // Access JSON data
-          const char* message = jsonDocument["message"];
-          int value = jsonDocument["value"].as<int>();  // Corrected to read as int
-          USE_SERIAL.printf("[WSc] Parsed JSON - Message: %s, Value: %d\n", message, value);
+          const char* sensorId = jsonDocument["sensor_id"];
+          float sensorData = jsonDocument["sensor_data"].as<float>();
+          USE_SERIAL.printf("[WSc] Parsed JSON - Sensor ID: %s, Sensor Data: %f\n", sensorId, sensorData);
         }
         break;
       }
-
 
     case WStype_BIN:
       USE_SERIAL.printf("[WSc] get binary length: %u\n", length);
