@@ -19,10 +19,9 @@ const int oneWireBus = 4;
 OneWire oneWire(oneWireBus);
 DallasTemperature tempsensor(&oneWire);
 
-const char* ssid = "Smart Solutions";
-const char* password = "913niraj913913";
-// const char* ssid = "Team . NET";
-// const char* password = "Nepo913913";
+const char* ssid = "Wifi SSID";
+const char* password = "Wifi Password";
+
 IPAddress customIP(192, 168, 18, 110);
 IPAddress customSoftIP(192, 168, 4, 5);
 IPAddress gateway(192, 168, 18, 1);
@@ -328,7 +327,7 @@ void handle_Dashboard() {
   dashboardContent += "</div>";
 
   // Displaying footer
-  dashboardContent += "<div class=\"container container-footer\"><p>V 1.0.0 Copyright Smart Solutions Technology 2023</p></div>\n";
+  dashboardContent += "<div class=\"container container-footer\"><p>V 1.0.0 Copyright Bishal Shrestha 2023</p></div>\n";
 
   String dashboardChartScriptFunction = dashboardChartScript("distanceChart", "One", "Two", "Three", "Four", "Five", distanceArray[0], distanceArray[1], distanceArray[2], distanceArray[3], distanceArray[4]);
   dashboardChartScriptFunction += dashboardChartScript("temperatureChart", "One", "Two", "Three", "Four", "Five", temperatureArray[0], temperatureArray[1], temperatureArray[2], temperatureArray[3], temperatureArray[4]);
@@ -462,7 +461,7 @@ void handle_esp32_Dashboard() {
   dashboardContent += "</div>";
   dashboardContent += "</div>";
 
-  dashboardContent += "<div class=\"container container-footer\"><p>V 1.0.0 Copyright Smart Solutions Technology 2023</p></div>\n";
+  dashboardContent += "<div class=\"container container-footer\"><p>V 1.0.0 Copyright Bishal Shrestha 2023</p></div>\n";
   dashboardContent += "</body>\n";
   dashboardContent += "</html>\n";
 
@@ -498,7 +497,7 @@ void handle_page(){
 String SendHomePage() {
   String ptr = "<!DOCTYPE html> <html>\n";
   ptr += "<head><meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0, user-scalable=no\">\n";
-  ptr += "<title>Web Server - ESP32 | SST</title>\n";
+  ptr += "<title>Web Server - ESP32</title>\n";
   ptr += "<style> html { font-family: Helvetica; display: inline-block; margin: 0px auto; text-align: center;}\n";
   ptr += "body { font-family: Arial, sans-serif; background-color: #121212; color: #f4f4ff;} h3 {color: #00b8e6;}\n";
   ptr += "p {font-size: 16px;color: #bbb;margin-bottom: 10px;}\n";
@@ -524,7 +523,7 @@ String SendHomePage() {
   ptr += "</div>";
 
   // Displaying footer
-  ptr += "<div class=\"container container-footer\"><p>V 1.0.0 Copyright Smart Solutions Technology 2023</p></div>\n";
+  ptr += "<div class=\"container container-footer\"><p>V 1.0.0 Copyright Bishal Shrestha 2023</p></div>\n";
   ptr += "</body>\n";
   ptr += "</html>\n";
 
