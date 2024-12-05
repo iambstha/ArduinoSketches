@@ -17,8 +17,8 @@ DallasTemperature tempsensor(&oneWire);
 WiFiMulti WiFiMulti;
 WebSocketsClient webSocket;
 
-const char* ssid = "Smart Solutions";
-const char* password = "913niraj913913";
+const char* ssid = "Wifi SSID";
+const char* password = "Wifi Password";
 
 #define trigPin 33
 #define echoPin 32
@@ -49,7 +49,7 @@ void hexdump(const void* mem, uint32_t len, uint8_t cols = 16) {
 }
 void connectToWiFi() {
   USE_SERIAL.println("Connecting to WiFi...");
-  WiFiMulti.addAP("Smart Solutions", "913niraj913913");
+  WiFiMulti.addAP("Wifi SSID", "Wifi Password");
 
   while (WiFiMulti.run() != WL_CONNECTED) {
     delay(100);
