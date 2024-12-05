@@ -4,11 +4,8 @@
 #include "soc/rtc_cntl_reg.h"
 #include "esp_camera.h"
 
-// const char* ssid = "Team . NET";
-// const char* password = "Nepo913913";
-
-const char* ssid = "Smart Solutions";
-const char* password = "913niraj913913";
+const char* ssid = "Wifi Name";
+const char* password = "Wifi Password";
 
 // String serverName = "192.168.18.98";
 // String serverName = "192.168.1.242";
